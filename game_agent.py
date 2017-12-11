@@ -256,7 +256,9 @@ class MinimaxPlayer(IsolationPlayer):
         if (not bool(game.get_legal_moves())):
             return (-1, -1)
 
-        return max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move)))
+        best_move = max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move)))
+
+        return best_move
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -395,7 +397,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             depth -= 1
 
             if not bool(game.get_legal_moves()) or depth <= 0:
-                return -1 
+                return -1
 
             min_infinity = float("-inf")
 
