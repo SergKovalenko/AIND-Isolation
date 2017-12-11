@@ -213,7 +213,40 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        def min_value(game):
+            """ Return the value for a win (+1) if the game is over,
+            otherwise return the minimum value over all legal child
+            nodes.
+            """
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            if not bool(game.get_legal_moves()):
+                return 1  # by Assumption 2
+            infinity = float("inf")
+            for move in game.get_legal_moves():
+                v = min(infinity, max_value(game.forecast_move(move)))
+            return v
+
+
+        def max_value(game):
+            """ Return the value for a loss (-1) if the game is over,
+            otherwise return the maximum value over all legal child
+            nodes.
+            """
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            if not bool(game.get_legal_moves()):
+                return -1  # by assumption 2
+            min_infinity = float("-inf")
+            for move in game.get_legal_moves():
+                v = max(min_infinity, min_value(game.forecast_move(move)))
+            return v
+
+
+        return max(game.get_legal_moves(),
+            key=lambda move: min_value(game.forecast_move(move)))
 
 
 class AlphaBetaPlayer(IsolationPlayer):
