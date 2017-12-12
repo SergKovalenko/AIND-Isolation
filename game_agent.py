@@ -212,51 +212,51 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
+        best_move = (-1, -1)
+
         # TODO: finish this function!
-        def min_value(game):
+        def min_value(game, depth):
             # return 1 if current game state is - winning state, otherwise call max_value
             # on every possible move
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            nonlocal depth
             depth -= 1
 
             if not bool(game.get_legal_moves()) or depth <= 0:
-                return 1
+                return self.score(game, self)
 
             infinity = float("inf")
 
             for move in game.get_legal_moves():
-                value = min(infinity, max_value(game.forecast_move(move)))
+                value = min(infinity, max_value(game.forecast_move(move), depth))
 
             return value
 
 
-        def max_value(game):
+        def max_value(game, depth):
             # return -1 if current game state is - losing state, otherwise call min_value
             # on every possible move
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            nonlocal depth
             depth -= 1
 
             if not bool(game.get_legal_moves()) or depth <= 0:
-                return -1 
+                return self.score(game, self)
 
             min_infinity = float("-inf")
 
             for move in game.get_legal_moves():
-                value = max(min_infinity, min_value(game.forecast_move(move)))
+                value = max(min_infinity, min_value(game.forecast_move(move), depth))
 
             return value
 
 
         if (not bool(game.get_legal_moves())):
-            return (-1, -1)
+            return best_move
 
-        best_move = max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move)))
+        best_move = max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move), depth))
 
         return best_move
 
