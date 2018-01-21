@@ -11,10 +11,13 @@ class SearchTimeout(Exception):
 
 
 def custom_score(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    This should be the best heuristic function for your project submission.
+    """Edge board and near edge moves have less possible moves. So they should be
+    have different score value. It's close to center_score heuristic, but it doesn't differ
+    all centered moves that not close to edge. Cuz all centered moves have same amount of freedoms
+    (possible moves) they should not be differ.
+    Edge move value = 1
+    Near edge move value = 2
+    All centered moves value = 3
 
     Note: this function should be called from within a Player instance as
     `self.score()` -- you should not need to call this function directly.
@@ -34,13 +37,48 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+
+    own_moves_value = 0
+    opp_moves_value = 0
+
+    for move in own_moves:
+        if 8 or 0 in move:
+            own_moves_value += 1
+        if 7 or 1 in move:
+            own_moves_value += 2
+        else:
+            own_moves_value += 3
+
+    for move in opp_moves:
+        if 8 or 0 in move:
+            opp_moves_value += 1
+        if 7 or 1 in move:
+            opp_moves_value += 2
+        else:
+            opp_moves_value += 3
+
+    return float(own_moves_value - opp_moves_value)
 
 
 def custom_score_2(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
+    """Heuristic build on board of values for possible moves. 
+
+    2 3 4 4 4 4 3 2
+    3 4 6 6 6 6 4 3
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    3 4 6 6 6 6 4 3
+    2 3 4 4 4 4 3 2
 
     Note: this function should be called from within a Player instance as
     `self.score()` -- you should not need to call this function directly.
@@ -60,13 +98,42 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+ 
+    value_board = [[2, 3, 4, 4, 4, 4, 3, 2],
+                   [3, 4, 6, 6, 6, 6, 4, 3],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [3, 4, 6, 6, 6, 6, 4, 3],
+                   [2, 3, 4, 4, 4, 4, 3, 2]]
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    moves = game.get_legal_moves(player)
+    moves_value = 0
+
+    for move in moves:
+        moves_value += value_board[move[0]][move[1]]
+
+    return float(moves_value)
 
 
 def custom_score_3(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
+    """Heuristic build on board of values for possible moves + difference with second player 
+
+    2 3 4 4 4 4 3 2
+    3 4 6 6 6 6 4 3
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    4 6 8 8 8 8 6 4
+    3 4 6 6 6 6 4 3
+    2 3 4 4 4 4 3 2
 
     Note: this function should be called from within a Player instance as
     `self.score()` -- you should not need to call this function directly.
@@ -86,8 +153,35 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+ 
+    value_board = [[2, 3, 4, 4, 4, 4, 3, 2],
+                   [3, 4, 6, 6, 6, 6, 4, 3],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [4, 6, 8, 8, 8, 8, 6, 4],
+                   [3, 4, 6, 6, 6, 6, 4, 3],
+                   [2, 3, 4, 4, 4, 4, 3, 2]]
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+
+    own_moves_value = 0
+    opp_moves_value = 0
+
+    for move in own_moves:
+        own_moves_value += value_board[move[0]][move[1]]
+
+    for move in opp_moves:
+        opp_moves_value += value_board[move[0]][move[1]]
+
+    return float(own_moves_value - opp_moves_value)
 
 
 class IsolationPlayer:
@@ -112,7 +206,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score_3, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
@@ -219,18 +313,16 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            depth -= 1
-
             # if not bool(game.get_legal_moves()):
             #     return 1
 
-            if depth <= 0 or not bool(game.get_legal_moves()):
+            if depth == 0 or not bool(game.get_legal_moves()):
                 return self.score(game, self)
 
             infinity = float("inf")
 
             for move in game.get_legal_moves():
-                value = min(infinity, max_value(game.forecast_move(move), depth))
+                value = min(infinity, max_value(game.forecast_move(move), depth - 1))
 
             return value
 
@@ -241,18 +333,16 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            depth -= 1
-
             # if not bool(game.get_legal_moves()):
             #     return -1
 
-            if depth <= 0 or not bool(game.get_legal_moves()):
+            if depth == 0 or not bool(game.get_legal_moves()):
                 return self.score(game, self)
 
             min_infinity = float("-inf")
 
             for move in game.get_legal_moves():
-                value = max(min_infinity, min_value(game.forecast_move(move), depth))
+                value = max(min_infinity, min_value(game.forecast_move(move), depth - 1))
 
             return value
 
@@ -260,7 +350,7 @@ class MinimaxPlayer(IsolationPlayer):
         if (not bool(game.get_legal_moves())):
             return (-1, -1)
  
-        return max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move), depth))
+        return max(game.get_legal_moves(), key=lambda move: min_value(game.forecast_move(move), depth - 1))
 
 
 class AlphaBetaPlayer(IsolationPlayer):
