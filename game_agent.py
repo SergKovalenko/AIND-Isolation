@@ -49,28 +49,30 @@ def custom_score(game, player):
     own_moves_value = 0
     opp_moves_value = 0
 
+    board_width = game.width
+    board_height = game.height
+
     for move in own_moves:
-        if 8 or 0 in move:
+        # check if edge move
+        if 0 in move or move[0] == board_width - 1 or move[1] == board_height - 1:
             own_moves_value += 1
-        if 7 or 1 in move:
+        # check if near edge move
+        elif 1 in move or move[0] == board_width - 2 or move[1] == board_height - 2:
             own_moves_value += 2
         else:
             own_moves_value += 3
-
-    for move in opp_moves:
-        if 8 or 0 in move:
-            opp_moves_value += 1
-        if 7 or 1 in move:
-            opp_moves_value += 2
-        else:
-            opp_moves_value += 3
 
     return float(own_moves_value - opp_moves_value)
 
 
 def custom_score_2(game, player):
-    """Heuristic build on board of values for possible moves. 
+    """Heuristic build on board of values for possible moves. Value of each move = number of possible moves
+    main idea, that only close to corner move have less that 8 possible moves. Even changing board size
+    will have same nubmer of possible moves for corners, closest corner siblings, edge  moves etc. And all
+    center moves that are more than 2 cells from edge will allways have 8 possible moves
 
+    8х8 board example:
+    
     2 3 4 4 4 4 3 2
     3 4 6 6 6 6 4 3
     4 6 8 8 8 8 6 4
@@ -98,15 +100,6 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
- 
-    value_board = [[2, 3, 4, 4, 4, 4, 3, 2],
-                   [3, 4, 6, 6, 6, 6, 4, 3],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [3, 4, 6, 6, 6, 6, 4, 3],
-                   [2, 3, 4, 4, 4, 4, 3, 2]]
 
     if game.is_loser(player):
         return float("-inf")
@@ -114,11 +107,34 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
+    board_width = game.width
+    board_height = game.height
+
     moves = game.get_legal_moves(player)
     moves_value = 0
 
+    # 
     for move in moves:
-        moves_value += value_board[move[0]][move[1]]
+        if move[0] == 0 or move[0] == board_width - 1:
+            if move[1] == 0 or move[1] == board_height - 1:
+                moves_value += 2
+            elif move[1] == 1 or move[1] == board_height - 2:
+                moves_value += 3
+            else:
+                moves_value += 4
+        elif move[0] == 1 or move[0] == board_width - 2:
+            if move[1] == 0 or move[1] == board_height - 1:
+                moves_value += 3
+            elif move[1] == 1 or move[1] == board_height - 2:
+                moves_value += 4
+            else:
+                moves_value += 6
+        elif move[1] == 0 or move[1] == board_height - 1:
+            moves_value += 4
+        elif move[1] == 1 or move[1] == board_height - 2:            
+            moves_value += 6
+        else:          
+            moves_value += 8
 
     return float(moves_value)
 
@@ -153,15 +169,6 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
- 
-    value_board = [[2, 3, 4, 4, 4, 4, 3, 2],
-                   [3, 4, 6, 6, 6, 6, 4, 3],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [4, 6, 8, 8, 8, 8, 6, 4],
-                   [3, 4, 6, 6, 6, 6, 4, 3],
-                   [2, 3, 4, 4, 4, 4, 3, 2]]
 
     if game.is_loser(player):
         return float("-inf")
@@ -169,17 +176,46 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
 
+    board_width = game.width
+    board_height = game.height
+
     own_moves = game.get_legal_moves(player)
     opp_moves = game.get_legal_moves(game.get_opponent(player))
 
     own_moves_value = 0
     opp_moves_value = 0
 
+    def count_move_value(move):
+        value = 0
+
+        if move[0] == 0 or move[0] == board_width - 1:
+            if move[1] == 0 or move[1] == board_height - 1:
+                value = 2
+            elif move[1] == 1 or move[1] == board_height - 2:
+                value = 3
+            else:
+                value = 4
+        elif move[0] == 1 or move[0] == board_width - 2:
+            if move[1] == 0 or move[1] == board_height - 1:
+                value = 3
+            elif move[1] == 1 or move[1] == board_height - 2:
+                value = 4
+            else:
+                value = 6
+        elif move[1] == 0 or move[1] == board_height - 1:
+            value = 4
+        elif move[1] == 1 or move[1] == board_height - 2:            
+            value = 6
+        else:          
+            value = 8
+
+        return value
+
     for move in own_moves:
-        own_moves_value += value_board[move[0]][move[1]]
+        own_moves_value += count_move_value(move)
 
     for move in opp_moves:
-        opp_moves_value += value_board[move[0]][move[1]]
+        opp_moves_value += count_move_value(move)
 
     return float(own_moves_value - opp_moves_value)
 
